@@ -1,0 +1,35 @@
+#Cleaning part
+
+needtoclean = pd.read_csv(r'C:\Users\sound\Desktop\data.csv')
+
+#making all into str, due its mixed with int,float,str
+needtoclean['Salary'] = needtoclean['Salary'].astype(str)
+
+cleanedSalary = []
+columnSeriesObj = needtoclean['Salary']
+for value in columnSeriesObj.values:
+    value = value.replace('Nuo',"").replace('Iki','')
+    value = value.strip()
+    value = re.split(r'[\s,-]+', value)
+    if len(value) > 1:  
+        value = (int(value[0])+int(value[1]))/2
+    else:
+        value = float(value[0])
+    value = round(value)
+    cleanedSalary.append(value)
+
+needtoclean['Salary'] = cleanedSalary
+
+
+
+cleanTitles = []
+    
+for value in needtoclean['Job Title'].values:
+    value = value.title()
+    value = value.replace('/', ' ').replace('(-Ė)','').replace('(-A)','').replace('(-As)', '').replace('(0s)','')
+    value = value.strip()
+
+    cleanTitles.append(value)
+
+needtoclean['Job Title'] = cleanTitles
+needtoclean.to_csv(r'C:/Users/sound/Desktop/manodata.csv')

@@ -1,0 +1,34 @@
+#Scraping part
+
+import requests
+import pandas as pd
+import seaborn as sns
+from bs4 import BeautifulSoup
+
+url = 'https://www.cvbankas.lt/?padalinys%5B0%5D=76&page=1'
+soup = BeautifulSoup(requests.get(url).content, 'html.parser').encode("utf-8")
+#print(soup)
+all_data = []
+for i in range(1, 6):
+    url = 'https://www.cvbankas.lt/?padalinys%5B0%5D=76&page='+str(i)
+    print(url)
+    soup = BeautifulSoup(requests.get(url).content, 'html.parser')
+    for h3 in soup.select('h3.list_h3'):
+        try:
+            job_title = h3.get_text(strip=True)
+            company = h3.find_next(class_="heading_secondary").get_text(strip=True)
+            salary = h3.find_next(class_="salary_amount").get_text(strip=True)
+            location = h3.find_next(class_="list_city").get_text(strip=True)
+            print('{:<50} {:<15} {:<15} {}'.format(company, salary, location, job_title))
+        except AttributeError:
+            pass
+            
+        all_data.append({
+                    'Job Title': job_title,
+                    'Company': company,
+                    'Salary': salary,
+                    'Location': location
+                })
+        
+df = pd.DataFrame(all_data)
+df.to_csv('data.csv')

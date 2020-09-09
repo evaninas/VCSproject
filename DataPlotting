@@ -1,0 +1,52 @@
+#Data plotting part
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+needToPlot = pd.read_csv(r'C:\Users\sound\Desktop\manodata.csv')
+needToPlot.info()
+#needToPlot.describe()
+
+
+plt.figure(figsize=(15,8))
+sns.barplot(x='Salary',y='Location',data=needToPlot)
+
+plt.figure(figsize=(14,12))
+plotLocation = needToPlot.groupby('Location')['Salary'].sum().sort_values(ascending=False).index.values
+sns.swarmplot(x='Location',y='Salary',data=needToPlot, order=plotLocation[0:3])
+
+plt.figure(figsize=(10,5))
+plotCompany = needToPlot.groupby('Company')['Salary'].mean().sort_values(ascending=False).index.values
+sns.barplot(x='Salary',y='Company', data=needToPlot, order=plotCompany[0:10])
+
+plt.figure(figsize=(20,10))
+sns.distplot(needToPlot['Salary'])
+
+juniorData = needToPlot[needToPlot['Job Title'].str.contains("Junior")]
+plt.figure(figsize=(8,12))
+sns.barplot(x='Salary',y='Job Title',data=juniorData).set_title('Key word: Junior')
+
+midData = needToPlot[needToPlot['Job Title'].str.contains("Mid")]
+plt.figure(figsize=(8,8))
+sns.barplot(x='Salary',y='Job Title',data=midData).set_title('Key word: Mid')
+
+seniorData = needToPlot[needToPlot['Job Title'].str.contains("Senior")]
+plt.figure(figsize=(8,12))
+sns.barplot(x='Salary',y='Job Title',data=seniorData).set_title('Key word: Senior')
+
+admData = needToPlot[needToPlot['Job Title'].str.contains("Administrator")]
+plt.figure(figsize=(8,8))
+sns.barplot(x='Salary',y='Job Title',data=admData).set_title('Key word: Adm')
+
+pythonData = needToPlot[needToPlot['Job Title'].str.lower().str.contains("python")]
+plt.figure(figsize=(8,8))
+sns.barplot(x='Salary',y='Job Title',data=pythonData).set_title('Programavimo kalba: Python')
+
+cData = needToPlot[needToPlot['Job Title'].str.contains("C#")]
+plt.figure(figsize=(8,8))
+sns.barplot(x='Salary',y='Job Title',data=cData).set_title('Programavimo kalba: C#')
+
+jaData = needToPlot[needToPlot['Job Title'].str.lower().str.contains("java")]
+plt.figure(figsize=(8,8))
+sns.barplot(x='Salary',y='Job Title',data=jaData).set_title('Programavimo kalba: Java')

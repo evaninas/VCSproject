@@ -1,6 +1,7 @@
 #Scraping part
 
 import requests
+import re
 import pandas as pd
 import seaborn as sns
 from bs4 import BeautifulSoup

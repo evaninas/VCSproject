@@ -1,0 +1,121 @@
+import requests
+import pandas as pd
+import seaborn as sns
+import re
+from bs4 import BeautifulSoup
+import matplotlib.pyplot as plt
+
+url = 'https://www.cvbankas.lt/?padalinys%5B0%5D=76&page=1'
+soup = BeautifulSoup(requests.get(url).content, 'html.parser').encode("utf-8")
+#print(soup)
+all_data = []
+for i in range(1, 6):
+    url = 'https://www.cvbankas.lt/?padalinys%5B0%5D=76&page='+str(i)
+    print(url)
+    soup = BeautifulSoup(requests.get(url).content, 'html.parser')
+    for h3 in soup.select('h3.list_h3'):
+        try:
+            job_title = h3.get_text(strip=True)
+            company = h3.find_next(class_="heading_secondary").get_text(strip=True)
+            salary = h3.find_next(class_="salary_amount").get_text(strip=True)
+            location = h3.find_next(class_="list_city").get_text(strip=True)
+            print('{:<50} {:<15} {:<15} {}'.format(company, salary, location, job_title))
+        except AttributeError:
+            pass
+            
+        all_data.append({
+                    'Job Title': job_title,
+                    'Company': company,
+                    'Salary': salary,
+                    'Location': location
+                })
+        
+df = pd.DataFrame(all_data)
+df.to_csv('data.csv')
+#
+Cleaning part
+
+needtoclean = pd.read_csv(r'C:\Users\sound\Desktop\data.csv')
+
+#making all into str, due its mixed with int,float,str
+needtoclean['Salary'] = needtoclean['Salary'].astype(str)
+
+cleanedSalary = []
+columnSeriesObj = needtoclean['Salary']
+for value in columnSeriesObj.values:
+    value = value.replace('Nuo',"").replace('Iki','')
+    value = value.strip()
+    value = re.split(r'[\s,-]+', value)
+    if len(value) > 1:  
+        value = (int(value[0])+int(value[1]))/2
+    else:
+        value = float(value[0])
+    value = round(value)
+    cleanedSalary.append(value)
+
+needtoclean['Salary'] = cleanedSalary
+
+
+
+cleanTitles = []
+    
+for value in needtoclean['Job Title'].values:
+    value = value.title()
+    value = value.replace('/', ' ').replace('(-Ė)','').replace('(-A)','').replace('(-As)', '').replace('(0s)','')
+    value = value.strip()
+
+    cleanTitles.append(value)
+
+needtoclean['Job Title'] = cleanTitles
+needtoclean.to_csv(r'C:/Users/sound/Desktop/manodata.csv')
+
+
+
+#Data plotting part
+
+needToPlot = pd.read_csv(r'C:\Users\sound\Desktop\manodata.csv')
+needToPlot.info()
+needToPlot.describe()
+
+
+plt.figure(figsize=(15,8))
+sns.barplot(x='Salary',y='Location',data=needToPlot)
+
+plt.figure(figsize=(14,12))
+plotLocation = needToPlot.groupby('Location')['Salary'].sum().sort_values(ascending=False).index.values
+sns.swarmplot(x='Location',y='Salary',data=needToPlot, order=plotLocation[0:3])
+
+plt.figure(figsize=(10,5))
+plotCompany = needToPlot.groupby('Company')['Salary'].mean().sort_values(ascending=False).index.values
+sns.barplot(x='Salary',y='Company', data=needToPlot, order=plotCompany[0:10])
+
+plt.figure(figsize=(20,10))
+sns.distplot(needToPlot['Salary'])
+
+juniorData = needToPlot[needToPlot['Job Title'].str.contains("Junior")]
+plt.figure(figsize=(8,12))
+sns.barplot(x='Salary',y='Job Title',data=juniorData).set_title('Key word: Junior')
+
+midData = needToPlot[needToPlot['Job Title'].str.contains("Mid")]
+plt.figure(figsize=(8,8))
+sns.barplot(x='Salary',y='Job Title',data=midData).set_title('Key word: Mid')
+
+seniorData = needToPlot[needToPlot['Job Title'].str.contains("Senior")]
+plt.figure(figsize=(8,12))
+sns.barplot(x='Salary',y='Job Title',data=seniorData).set_title('Key word: Senior')
+
+admData = needToPlot[needToPlot['Job Title'].str.contains("Administrator")]
+plt.figure(figsize=(8,8))
+sns.barplot(x='Salary',y='Job Title',data=admData).set_title('Key word: Adm')
+
+pythonData = needToPlot[needToPlot['Job Title'].str.lower().str.contains("python")]
+plt.figure(figsize=(8,8))
+sns.barplot(x='Salary',y='Job Title',data=pythonData).set_title('Programavimo kalba: Python')
+
+cData = needToPlot[needToPlot['Job Title'].str.contains("C#")]
+plt.figure(figsize=(8,8))
+sns.barplot(x='Salary',y='Job Title',data=cData).set_title('Programavimo kalba: C#')
+
+jaData = needToPlot[needToPlot['Job Title'].str.lower().str.contains("java")]
+plt.figure(figsize=(8,8))
+sns.barplot(x='Salary',y='Job Title',data=jaData).set_title('Programavimo kalba: Java')
